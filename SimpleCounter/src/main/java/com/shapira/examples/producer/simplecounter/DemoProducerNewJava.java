@@ -70,7 +70,15 @@ public class DemoProducerNewJava implements DemoProducer {
 
     /* Produce a record and wait for server to reply. Throw an exception if something goes wrong */
     private void produceSync(String value) throws ExecutionException, InterruptedException {
+        /*
+        for ProducerRecord, actually we can specify not only which topic, but also parition, message key, message value
+        the complete version could be : record = new ProducerRecord<byte[],byte[]>(topic, partition, key1, value1)
+        */
         ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, value);
+
+        /*
+        see info below
+        */
         producer.send(record).get();
 
     }
@@ -78,6 +86,16 @@ public class DemoProducerNewJava implements DemoProducer {
     /* Produce a record without waiting for server. This includes a callback that will print an error if something goes wrong */
     private void produceAsync(String value) {
         ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, value);
+
+        /*
+        for send,
+        1. regarding callback -
+        acctually the callback is a way to compensate for what's included in the sync mode, but not in async mode.
+        in sync mode, the server is forced to respond for each message acknowledgement; however,
+        in async mode, you need custom code to handle what's the next, because async send will return immediately after the message is buffered successfully.
+        2. regarding the result of send -
+        The result of the send is a RecordMetadata specifying the partition the ‘record’ was sent to and the ‘offset’ it was assigned.
+        */
         producer.send(record, new DemoProducerCallback());
     }
 
